@@ -183,11 +183,12 @@
             background: rgba(0,0,0,0.4); 
             backdrop-filter: blur(15px);
             display: flex; 
-            justify-content: center; 
+            justify-content: flex-start; 
             align-items: center; 
             gap: 50px; 
             border-top: 1px solid var(--glass-border); 
             padding: 0 20px;
+            overflow-x: auto;
         }
         .team-podium { 
             background: var(--glass);
@@ -249,7 +250,7 @@
         <div class="setup-card">
             <h1 style="font-family:'Bebas Neue'; font-size: 4rem; margin-top:0">REGISTRATION</h1>
             <p style="opacity:0.7; margin-bottom:30px">Enter the number of participating squads</p>
-            <input type="number" id="team-count" value="2" min="1" max="6">
+            <input type="number" id="team-count" value="2" min="1" max="10">
             <br><br><br>
             <button class="play-btn-big" style="padding: 20px 60px; font-size: 1.5rem;" onclick="initPlay()">Begin Broadcast</button>
             <br><br>
