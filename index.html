@@ -1,1 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FRIYAY! | Ultimate Game Show</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&family=Bebas+Neue&display=swap');
 
+        :root {
+            --bg: #03001e;
+            --accent-pink: #ff007a;
+            --accent-blue: #00d2ff;
+            --gold: #fcc201;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-heavy: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --card-bg: #060ce9;
+            --shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        * { box-sizing: border-box; outline: none; }
+        
+        body, html {
+            margin: 0; padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            background: radial-gradient(circle at top right, #2a0845, #03001e);
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- BACKGROUND ANIMATION --- */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+            opacity: 0.1;
+            pointer-events: none;
+        }
+
+        /* --- SCREEN MANAGEMENT --- */
+        .screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: none;
+            flex-direction: column;
+            transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .screen.active { display: flex; animation: slideUp 0.6s both; }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* --- LANDING --- */
+        #landing-screen { justify-content: center; align-items: center; }
+        .hero-title {
+            font-family: 'Bebas Neue', cursive;
+            font-size: clamp(100px, 18vw, 260px);
+            margin: 0;
+            line-height: 0.9;
+            background: linear-gradient(180deg, #fff 30%, #555 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 15px 30px rgba(0,0,0,0.8));
+            animation: float 4s ease-in-out infinite;
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+
+        .play-btn-big {
+            margin-top: 50px;
+            padding: 25px 90px;
+            font-size: 2.5rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            border-radius: 100px;
+            border: none;
+            cursor: pointer;
+            background: white;
+            color: black;
+            box-shadow: 0 0 50px rgba(0, 210, 255, 0.3);
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .play-btn-big:hover { transform: scale(1.1) rotate(-1deg); background: var(--accent-blue); color: white; box-shadow: 0 0 60px rgba(0, 210, 255, 0.6); }
+
+        .edit-link { 
+            margin-top: 40px; 
+            color: rgba(255,255,255,0.4); 
+            cursor: pointer; 
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+        .edit-link:hover { color: var(--accent-pink); letter-spacing: 4px; }
+
+        /* --- SETUP CARD --- */
+        #setup-screen { justify-content: center; align-items: center; background: rgba(0,0,0,0.7); backdrop-filter: blur(20px); }
+        .setup-card { 
+            background: var(--glass); 
+            padding: 60px; 
+            border-radius: 30px; 
+            border: 1px solid var(--glass-border); 
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+        .setup-card input {
+            background: transparent; border: 2px solid var(--glass-border); color: white;
+            padding: 15px; border-radius: 15px; width: 100px; text-align: center; font-size: 2rem; font-family: 'Bebas Neue';
+        }
+
+        /* --- GAME BOARD --- */
+        .board-header { 
+            height: 90px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 0 50px; 
+            background: rgba(0,0,0,0.2);
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .grid-container { 
+            flex-grow: 1; 
+            display: grid; 
+            grid-template-columns: repeat(5, 1fr); 
+            grid-template-rows: 80px repeat(5, 1fr); 
+            gap: 15px; 
+            padding: 20px 40px; 
+            overflow-y: auto; 
+        }
+        .cat-tile { 
+            background: var(--glass-heavy); 
+            border: 1px solid var(--glass-border); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            text-align: center; 
+            font-weight: 900; 
+            text-transform: uppercase; 
+            border-radius: 12px;
+            letter-spacing: 2px;
+            font-size: 1.1rem;
+            box-shadow: var(--shadow);
+        }
+        .q-tile { 
+            background: linear-gradient(135deg, var(--card-bg), #00014a); 
+            border: 1px solid rgba(255,255,255,0.1); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 4rem; 
+            font-weight: 900; 
+            color: var(--gold); 
+            cursor: pointer; 
+            border-radius: 15px; 
+            transition: 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); 
+            font-family: 'Bebas Neue'; 
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .q-tile::after {
+            content: ""; position: absolute; top:0; left:0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(255,255,255,0.1), transparent);
+            border-radius: inherit; pointer-events: none;
+        }
+        .q-tile:hover { 
+            transform: translateY(-8px) scale(1.02); 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 20px var(--accent-blue);
+            background: var(--accent-blue);
+            color: white;
+        }
+        .q-tile.preview-text { font-size: 1rem; font-family: 'Outfit'; color: #eee; padding: 15px; font-weight: 400; line-height: 1.2; text-transform: none; }
+        .q-tile.spent { opacity: 0.05; cursor: default; transform: none !important; filter: grayscale(1); }
+
+        /* --- SCOREBOARD --- */
+        .scoreboard { 
+            height: 180px; 
+            background: rgba(0,0,0,0.4); 
+            backdrop-filter: blur(15px);
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 50px; 
+            border-top: 1px solid var(--glass-border); 
+            padding: 0 20px;
+        }
+        .team-podium { 
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 15px 30px;
+            border-radius: 20px;
+            text-align: center; 
+            min-width: 240px; 
+            transition: 0.3s;
+        }
+        .team-podium:hover { background: var(--glass-heavy); border-color: var(--accent-blue); }
+        .team-score { font-size: 5rem; font-family: 'Bebas Neue'; line-height: 1; margin: 5px 0; color: white; letter-spacing: 2px; }
+        .score-ctrls button { 
+            background: rgba(255,255,255,0.1); border: none; color: white; 
+            width: 45px; height: 45px; border-radius: 12px; cursor: pointer; 
+            font-size: 1.2rem; transition: 0.2s;
+        }
+        .score-ctrls button:hover { background: white; color: black; transform: scale(1.1); }
+
+        /* --- MODALS --- */
+        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; z-index: 5000; align-items: center; justify-content: center; background: rgba(0,0,0,1); overflow: auto; }
+        
+        #play-modal { flex-direction: column; padding: 20px; text-align: center; max-height: 100vh; overflow-y: auto; }
+        .modal-body-text { font-size: clamp(2rem, 8vw, 4rem); font-weight: 900; margin-top: 20px; line-height: 1.2; letter-spacing: -1px; text-shadow: 0 10px 30px rgba(0,0,0,0.5); word-wrap: break-word; padding: 0 20px; }
+        .modal-media-frame { display: flex; align-items: center; justify-content: center; max-height: 70vh; overflow: hidden; }
+        .modal-media-frame img, .modal-media-frame video, .modal-media-frame audio { max-height: 70vh; max-width: 95vw; border: 8px solid white; border-radius: 20px; box-shadow: 0 30px 60px rgba(0,0,0,0.8); object-fit: contain; }
+
+        #edit-modal { background: rgba(0,0,0,0.9); backdrop-filter: blur(30px); }
+        .edit-window { background: #fff; color: #000; width: 1000px; border-radius: 30px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 100px rgba(0,0,0,1); }
+        .edit-header { background: #111; color: #fff; padding: 25px 40px; display: flex; justify-content: space-between; font-weight: 900; font-size: 1.2rem; text-transform: uppercase; }
+        .edit-body { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; padding: 40px; }
+        .edit-col textarea { 
+            width: 100%; height: 220px; padding: 20px; border: 2px solid #eee; 
+            border-radius: 20px; font-family: inherit; resize: none; font-size: 1.1rem; transition: 0.3s;
+        }
+        .edit-col textarea:focus { border-color: var(--accent-pink); background: #f9f9f9; }
+        .media-box { background: #f5f5f5; padding: 15px; border-radius: 15px; margin-top: 15px; border: 1px dashed #ccc; }
+        .btn-save-cell { background: var(--accent-pink); color: white; border: none; padding: 20px; font-weight: 900; font-size: 1.2rem; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; }
+
+        .btn-util { background: var(--glass); border: 1px solid var(--glass-border); color: white; padding: 12px 20px; border-radius: 12px; cursor: pointer; transition: 0.3s; font-weight: 700; text-transform: uppercase; font-size: 0.8rem; }
+        .btn-util:hover { background: white; color: black; border-color: white; }
+
+        /* --- ANIMATIONS FOR GRID --- */
+        .grid-container > * { animation: tilePop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
+        @keyframes tilePop { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+    </style>
+</head>
+<body>
+
+    <!-- 1. LANDING -->
+    <div id="landing-screen" class="screen active">
+        <h1 class="hero-title">FRIYAY!</h1>
+        <button class="play-btn-big" onclick="showTeamSetup()">Start Show</button>
+        <div class="edit-link" onclick="initEditor()">⚙ Designer Dashboard</div>
+    </div>
+
+    <!-- 2. TEAM SETUP -->
+    <div id="setup-screen" class="screen">
+        <div class="setup-card">
+            <h1 style="font-family:'Bebas Neue'; font-size: 4rem; margin-top:0">REGISTRATION</h1>
+            <p style="opacity:0.7; margin-bottom:30px">Enter the number of participating squads</p>
+            <input type="number" id="team-count" value="2" min="1" max="6">
+            <br><br><br>
+            <button class="play-btn-big" style="padding: 20px 60px; font-size: 1.5rem;" onclick="initPlay()">Begin Broadcast</button>
+            <br><br>
+            <button class="edit-link" style="color:white" onclick="location.reload()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- 3. MAIN INTERFACE -->
+    <div id="game-screen" class="screen">
+        <div class="board-header">
+            <button class="btn-util" id="exit-btn" onclick="location.reload()">Exit Game</button>
+            <div id="mode-info" style="font-weight: 900; color: var(--accent-pink); letter-spacing: 2px; text-transform: uppercase;"></div>
+            <div id="edit-controls" style="display: none; gap: 10px;">
+                <button class="btn-util" onclick="saveToBrowser()">Save Project</button>
+                <button class="btn-util" onclick="playWithEdits()" style="border-color:var(--accent-blue); color:var(--accent-blue)">Preview Game</button>
+                <button class="btn-util" onclick="exportFile()">Export .friyay</button>
+                <button class="btn-util" onclick="document.getElementById('load-f').click()">Import File</button>
+            </div>
+        </div>
+        <div id="main-grid" class="grid-container"></div>
+        <div class="scoreboard" id="scoreboard"></div>
+        <input type="file" id="load-f" hidden accept=".friyay" onchange="importFile(this)">
+    </div>
+
+    <!-- 4. EDIT POPUP -->
+    <div id="edit-modal" class="modal">
+        <div class="edit-window">
+            <div class="edit-header"><span>Clue Configurator</span><span onclick="saveCell()" style="cursor:pointer">✕</span></div>
+            <div class="edit-body">
+                <div class="edit-col">
+                    <h3>The Clue (Question)</h3>
+                    <textarea id="in-q" placeholder="Type the challenge here..."></textarea>
+                    <div class="media-box">
+                        <small>Attach Visual/Audio Assets</small><br>
+                        <input type="file" id="in-mq" class="media-btn" onchange="handleFile('mq')">
+                        <button onclick="removeMedia('mq')" style="margin-left: 10px; padding: 5px 10px; background: #ff6b6b; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.8rem;">🗑 Remove</button>
+                    </div>
+                    <div id="preview-mq" style="margin-top: 15px; max-height: 120px; overflow: hidden;"></div>
+                </div>
+                <div class="edit-col">
+                    <h3>The Reveal (Answer)</h3>
+                    <textarea id="in-a" placeholder="Type the correct response..."></textarea>
+                    <div class="media-box">
+                        <small>Attach Visual/Audio Assets</small><br>
+                        <input type="file" id="in-ma" class="media-btn" onchange="handleFile('ma')">
+                        <button onclick="removeMedia('ma')" style="margin-left: 10px; padding: 5px 10px; background: #ff6b6b; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.8rem;">🗑 Remove</button>
+                    </div>
+                    <div id="preview-ma" style="margin-top: 15px; max-height: 120px; overflow: hidden;"></div>
+                </div>
+            </div>
+            <button class="btn-save-cell" onclick="saveCell()">Sync Changes to Board</button>
+        </div>
+    </div>
+
+    <!-- 5. PLAY POPUP -->
+    <div id="play-modal" class="modal">
+        <div id="m-media" class="modal-media-frame"></div>
+        <div id="m-text" class="modal-body-text"></div>
+        <div id="m-hint" style="margin-top: 80px; color: var(--accent-blue); font-weight: 900; letter-spacing: 5px; opacity:0.6">SPACE TO REVEAL</div>
+    </div>
+
+    <script>
+        let gameMode = 'play';
+        let gameData = {
+            categories: ["CAT 1", "CAT 2", "CAT 3", "CAT 4", "CAT 5"],
+            questions: Array(25).fill(null).map(() => ({ q: '', a: '', mq: null, ma: null })),
+            teams: []
+        };
+        let activeIdx = null;
+        let playStep = 0;
+
+        // DB SETUP
+        let db;
+        const dbRequest = indexedDB.open('FriyayDB', 1);
+        dbRequest.onsuccess = () => { db = dbRequest.result; loadGameData(); };
+        dbRequest.onupgradeneeded = (e) => { e.target.result.createObjectStore('gameStore', { keyPath: 'id' }); };
+
+        function loadGameData() {
+            if (!db) return;
+            const store = db.transaction(['gameStore'], 'readonly').objectStore('gameStore');
+            const request = store.get('game');
+            request.onsuccess = () => { if (request.result) gameData = request.result.data; };
+        }
+
+        function saveGameData() {
+            if (!db) return;
+            const store = db.transaction(['gameStore'], 'readwrite').objectStore('gameStore');
+            store.put({ id: 'game', data: gameData });
+        }
+
+        function showTeamSetup() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('setup-screen').classList.add('active');
+        }
+
+        function initPlay() {
+            gameMode = 'play';
+            const count = parseInt(document.getElementById('team-count').value);
+            gameData.teams = [];
+            for(let i=0; i<count; i++) gameData.teams.push({name: `TEAM ${i+1}`, score: 0});
+            document.getElementById('edit-controls').style.display = 'none';
+            document.getElementById('scoreboard').style.display = 'flex';
+            document.getElementById('mode-info').innerText = "";
+            launchMain();
+        }
+
+        function initEditor() {
+            gameMode = 'edit';
+            document.getElementById('edit-controls').style.display = 'flex';
+            document.getElementById('scoreboard').style.display = 'none';
+            document.getElementById('mode-info').innerText = "Editor Active";
+            launchMain();
+        }
+
+        function launchMain() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('game-screen').classList.add('active');
+            renderBoard();
+            if(gameMode === 'play') renderScores();
+        }
+
+        function renderBoard() {
+            const grid = document.getElementById('main-grid');
+            grid.innerHTML = '';
+            
+            gameData.categories.forEach((cat, i) => {
+                const d = document.createElement('div');
+                d.className = 'cat-tile';
+                d.style.animationDelay = (i * 0.1) + 's';
+                if(gameMode === 'edit') {
+                    d.innerHTML = `<input type="text" value="${cat}" style="background:transparent; color:white; border:none; text-align:center; width:100%; font-weight:900" onchange="gameData.categories[${i}]=this.value">`;
+                } else { d.innerText = cat; }
+                grid.appendChild(d);
+            });
+
+            for(let row=0; row<5; row++) {
+                for(let col=0; col<5; col++) {
+                    const idx = (col * 5) + row;
+                    const data = gameData.questions[idx];
+                    const div = document.createElement('div');
+                    div.id = `q-${idx}`;
+                    div.className = 'q-tile';
+                    div.style.animationDelay = (idx * 0.02 + 0.5) + 's';
+                    
+                    if(gameMode === 'edit') {
+                        div.classList.add('preview-text');
+                        div.innerText = data.q || `[${ (row+1)*100 }]`;
+                    } else {
+                        div.innerText = (row + 1) * 100;
+                    }
+
+                    div.onclick = () => {
+                        activeIdx = idx;
+                        if(gameMode === 'edit') openEdit(idx);
+                        else openPlay(idx);
+                    };
+                    grid.appendChild(div);
+                }
+            }
+        }
+
+        function openEdit(idx) {
+            const data = gameData.questions[idx];
+            document.getElementById('in-q').value = data.q;
+            document.getElementById('in-a').value = data.a;
+            document.getElementById('edit-modal').style.display = 'flex';
+            renderMediaPreviews();
+        }
+
+        function handleFile(type) {
+            const file = document.getElementById('in-' + type).files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                gameData.questions[activeIdx][type] = { src: e.target.result, type: file.type.split('/')[0] };
+                renderMediaPreviews();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function renderMediaPreviews() {
+            const data = gameData.questions[activeIdx];
+            ['mq', 'ma'].forEach(t => {
+                const p = document.getElementById('preview-' + t);
+                p.innerHTML = '';
+                if(data[t]) {
+                    if(data[t].type === 'image') p.innerHTML = `<img src="${data[t].src}" style="max-height:80px">`;
+                    else p.innerHTML = `<small style="color:green">Media Attached</small>`;
+                }
+            });
+        }
+
+        function removeMedia(type) {
+            if(activeIdx !== null && activeIdx !== undefined) {
+                gameData.questions[activeIdx][type] = null;
+                renderMediaPreviews();
+                document.getElementById('in-' + type).value = '';
+            }
+        }
+
+        function saveCell() {
+            gameData.questions[activeIdx].q = document.getElementById('in-q').value;
+            gameData.questions[activeIdx].a = document.getElementById('in-a').value;
+            saveGameData();
+            document.getElementById('edit-modal').style.display = 'none';
+            renderBoard();
+        }
+
+        function openPlay(idx) {
+            const data = gameData.questions[idx];
+            if(!data.q || document.getElementById(`q-${idx}`).classList.contains('spent')) return;
+            playStep = 0;
+            document.getElementById('play-modal').style.display = 'flex';
+            showContent(data.q, data.mq);
+            document.addEventListener('keydown', handleSpacePress);
+        }
+
+        function handleSpacePress(e) {
+            if(e.code === 'Space') { e.preventDefault(); handlePlayStep(); }
+        }
+
+        function handlePlayStep() {
+            const data = gameData.questions[activeIdx];
+            if(playStep === 0) {
+                playStep = 1;
+                showContent(data.a, data.ma);
+                document.getElementById('m-hint').innerText = "SPACE TO EXIT";
+            } else {
+                document.getElementById('play-modal').style.display = 'none';
+                document.getElementById(`q-${activeIdx}`).classList.add('spent');
+                document.removeEventListener('keydown', handleSpacePress);
+            }
+        }
+
+        function showContent(txt, media) {
+            document.getElementById('m-text').innerText = txt;
+            const frame = document.getElementById('m-media');
+            frame.innerHTML = '';
+            if(media) {
+                if(media.type === 'image') frame.innerHTML = `<img src="${media.src}">`;
+                else if(media.type === 'video') frame.innerHTML = `<video src="${media.src}" controls></video>`;
+                else if(media.type === 'audio') frame.innerHTML = `<audio src="${media.src}" controls></audio>`;
+            }
+        }
+
+        function renderScores() {
+            const cont = document.getElementById('scoreboard');
+            cont.innerHTML = '';
+            gameData.teams.forEach((t, i) => {
+                const div = document.createElement('div');
+                div.className = 'team-podium';
+                div.innerHTML = `
+                    <div class="team-name" contenteditable="true" onblur="gameData.teams[${i}].name=this.innerText">${t.name}</div>
+                    <div class="team-score">${t.score}</div>
+                    <div class="score-ctrls">
+                        <button onclick="changeScore(${i}, -100)">-</button>
+                        <button onclick="changeScore(${i}, 100)">+</button>
+                    </div>
+                `;
+                cont.appendChild(div);
+            });
+        }
+        function changeScore(i, amt) { gameData.teams[i].score += amt; renderScores(); }
+        function saveToBrowser() { saveGameData(); alert("Progress Saved Locally."); }
+        function exportFile() {
+            const mediaCount = gameData.questions.filter(q => q.mq || q.ma).length;
+            const blob = new Blob([JSON.stringify(gameData)], {type: "application/json"});
+            const sizeInMB = (blob.size / (1024 * 1024)).toFixed(2);
+            const a = document.createElement('a'); 
+            a.href = URL.createObjectURL(blob); 
+            a.download = "show.friyay"; 
+            a.click();
+            alert(`Exported! File includes ${mediaCount} clues with media.\nFile size: ${sizeInMB} MB`);
+        }
+        function importFile(input) {
+            const reader = new FileReader();
+            reader.onload = (e) => { gameData = JSON.parse(e.target.result); saveGameData(); renderBoard(); alert("Project Imported."); };
+            reader.readAsText(input.files[0]);
+        }
+        function playWithEdits() { saveGameData(); showTeamSetup(); }
+    </script>
+</body>
+</html>
