@@ -174,6 +174,10 @@
             background: var(--accent-blue);
             color: white;
         }
+        .drag-over {
+            outline: 3px dashed var(--accent-pink);
+            transform: scale(1.03);
+        }
         .q-tile.preview-text { font-size: 1rem; font-family: 'Outfit'; color: #eee; padding: 15px; font-weight: 400; line-height: 1.2; text-transform: none; }
         .q-tile.spent { opacity: 0.05; cursor: default; transform: none !important; filter: grayscale(1); }
 
@@ -381,6 +385,13 @@
                 d.className = 'cat-tile';
                 d.style.animationDelay = (i * 0.1) + 's';
                 if(gameMode === 'edit') {
+                    d.draggable = true;
+                    d.dataset.type = 'category';
+                    d.dataset.index = i;
+                    d.addEventListener('dragstart', handleDragStart);
+                    d.addEventListener('dragover', handleDragOver);
+                    d.addEventListener('drop', handleDrop);
+                    d.addEventListener('dragend', handleDragEnd);
                     d.innerHTML = `<input type="text" value="${cat}" style="background:transparent; color:white; border:none; text-align:center; width:100%; font-weight:900" onchange="gameData.categories[${i}]=this.value">`;
                 } else { d.innerText = cat; }
                 grid.appendChild(d);
@@ -394,8 +405,14 @@
                     div.id = `q-${idx}`;
                     div.className = 'q-tile';
                     div.style.animationDelay = (idx * 0.02 + 0.5) + 's';
-                    
                     if(gameMode === 'edit') {
+                        div.draggable = true;
+                        div.dataset.type = 'question';
+                        div.dataset.index = idx;
+                        div.addEventListener('dragstart', handleDragStart);
+                        div.addEventListener('dragover', handleDragOver);
+                        div.addEventListener('drop', handleDrop);
+                        div.addEventListener('dragend', handleDragEnd);
                         div.classList.add('preview-text');
                         div.innerText = data.q || `[${ (row+1)*100 }]`;
                     } else {
@@ -410,6 +427,50 @@
                     grid.appendChild(div);
                 }
             }
+        }
+
+        let dragSource = null;
+
+        function handleDragStart(event) {
+            const target = event.currentTarget;
+            dragSource = { type: target.dataset.type, index: parseInt(target.dataset.index, 10) };
+            event.dataTransfer.effectAllowed = 'move';
+            target.classList.add('dragging');
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'move';
+            event.currentTarget.classList.add('drag-over');
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            const target = event.currentTarget;
+            target.classList.remove('drag-over');
+
+            if (!dragSource) return;
+            const targetType = target.dataset.type;
+            const targetIndex = parseInt(target.dataset.index, 10);
+
+            if (dragSource.type !== targetType || targetIndex === dragSource.index) return;
+            swapEditItems(dragSource.type, dragSource.index, targetIndex);
+            renderBoard();
+        }
+
+        function handleDragEnd(event) {
+            event.currentTarget.classList.remove('dragging');
+            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+            dragSource = null;
+        }
+
+        function swapEditItems(type, sourceIndex, targetIndex) {
+            if (type === 'category') {
+                [gameData.categories[sourceIndex], gameData.categories[targetIndex]] = [gameData.categories[targetIndex], gameData.categories[sourceIndex]];
+            } else if (type === 'question') {
+                [gameData.questions[sourceIndex], gameData.questions[targetIndex]] = [gameData.questions[targetIndex], gameData.questions[sourceIndex]];
+            }
+            saveGameData();
         }
 
         function openEdit(idx) {
